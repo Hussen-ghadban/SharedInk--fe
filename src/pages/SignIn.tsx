@@ -8,6 +8,7 @@ export default function SignIn() {
 
   const handleSubmit = async (data: any) => {
     const res = await signin(data);
+    
     setToken(res.data.token);
   };
 
