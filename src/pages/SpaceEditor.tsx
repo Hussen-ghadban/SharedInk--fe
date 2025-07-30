@@ -21,6 +21,9 @@ const SpaceEditor = () => {
   const [content, setContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+const [inviteStatus, setInviteStatus] = useState("");
+
 
   useEffect(() => {
     const fetchSpace = async () => {
@@ -72,6 +75,43 @@ const SpaceEditor = () => {
 
   return (
     <div style={{ padding: "1rem" }}>
+        <div style={{ marginTop: "2rem" }}>
+  <h4>Invite user by email</h4>
+  <input
+    type="email"
+    placeholder="Enter user's email"
+    value={inviteEmail}
+    onChange={(e) => setInviteEmail(e.target.value)}
+    style={{ padding: "0.5rem", width: "250px" }}
+  />
+  <button
+    onClick={async () => {
+      setInviteStatus("");
+      try {
+        const res = await fetch(`http://localhost:3000/spaces/${id}/invite`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ email: inviteEmail }),
+        });
+
+        if (!res.ok) throw new Error("Failed to invite user");
+        setInviteStatus("User invited successfully.");
+        setInviteEmail("");
+      } catch (err) {
+        console.error(err);
+        setInviteStatus("Failed to invite user.");
+      }
+    }}
+    style={{ marginLeft: "1rem", padding: "0.5rem 1rem" }}
+  >
+    Invite
+  </button>
+  {inviteStatus && <p style={{ marginTop: "0.5rem" }}>{inviteStatus}</p>}
+</div>
+
       <h2>{space?.title ?? "Loading..."}</h2>
 
       <ReactQuill value={content} onChange={setContent} />
