@@ -88,7 +88,7 @@ const [inviteStatus, setInviteStatus] = useState("");
     onClick={async () => {
       setInviteStatus("");
       try {
-        const res = await fetch(`http://localhost:3000/spaces/${id}/invite`, {
+        const res = await fetch(`http://localhost:3000/invites/${id}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
