@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import AddSpace from './pages/AddSpace';
-import GetSpaces from './pages/GetSpaces';
+import GetSpaces from './pages/Spaces';
 import SpaceEditor from './pages/SpaceEditor';
+import InvitationsList from './pages/invitation';
 
 export default function AppRouter() {
   return (
@@ -15,11 +16,8 @@ export default function AppRouter() {
         <Route path="/addSpace" element={<AddSpace />} />
         <Route path="/spaces" element={<GetSpaces />} />
         <Route path="/spaces/:id" element={<SpaceEditor />} />
+        <Route path="/invites" element={<InvitationsList />} />
 
-
-
-
-        {/* Add more routes here */}
       </Routes>
     </BrowserRouter>
   );
