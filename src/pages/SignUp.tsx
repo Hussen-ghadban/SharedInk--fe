@@ -1,18 +1,20 @@
-import { useNavigate } from 'react-router-dom';
-import { AuthForm } from '../components/AuthForm';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { signup } from '../api/auth';
+import { useAuth } from '../store/auth';
+import { AuthForm } from '../components/AuthForm';
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { setToken, token } = useAuth();
 
-  const handleSubmit = async (data: any) => {
-    try {
-      const res = await signup(data);
-      console.log("Signup success:", res.data);
-      navigate('/signin'); // Redirect to login page
-    } catch (err) {
-      console.error("Signup failed:", err);
-    }
+  if (token) {
+    return <Navigate to="/spaces" replace />;
+  }
+
+  const handleSubmit = async (data: { username: string ,email: string; password: string; }) => {
+    const res = await signup(data);
+    setToken(res.data.token);
+    navigate('/spaces');
   };
 
   return <AuthForm onSubmit={handleSubmit} type="signup" />;
