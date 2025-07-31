@@ -1,15 +1,20 @@
-// src/pages/SignIn.tsx
+import { useNavigate, Navigate } from 'react-router-dom';
 import { signin } from '../api/auth';
 import { useAuth } from '../store/auth';
 import { AuthForm } from '../components/AuthForm';
 
 export default function SignIn() {
-  const setToken = useAuth((state) => state.setToken);
+  const navigate = useNavigate();
+  const { setToken, token } = useAuth();
 
-  const handleSubmit = async (data: any) => {
+  if (token) {
+    return <Navigate to="/spaces" replace />;
+  }
+
+  const handleSubmit = async (data: { email: string; password: string; username?: string }) => {
     const res = await signin(data);
-    
     setToken(res.data.token);
+    navigate('/spaces');
   };
 
   return <AuthForm onSubmit={handleSubmit} type="signin" />;
