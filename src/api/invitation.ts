@@ -1,8 +1,9 @@
 // src/api/auth.ts
 import axios from 'axios';
+import { baseUrl } from '../config';
 
 const API = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: baseUrl,
 });
 
   export const getInvitations  = (token:string) =>

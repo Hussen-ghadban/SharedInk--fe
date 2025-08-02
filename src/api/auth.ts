@@ -1,8 +1,9 @@
 // src/api/auth.ts
 import axios from 'axios';
+import { baseUrl } from '../config';
 
 const API = axios.create({
-  baseURL: 'http://localhost:3000', // change if needed
+  baseURL: baseUrl, // change if needed
 //   withCredentials: true, // if using cookies
 });
 

@@ -51,8 +51,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     try {
       const decoded: any = jwtDecode(token);
       const user = {
-        id: decoded.sub,
-        email: decoded.email,
+        id: decoded.id,
+        username: decoded.username,
       };
       localStorage.setItem('token', token);
       set({ token, user });

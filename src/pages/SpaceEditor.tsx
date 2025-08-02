@@ -6,6 +6,7 @@ import { useAuth } from "../store/auth";
 import { io, Socket } from "socket.io-client";
 import debounce from "lodash.debounce";
 import { Send, Users, FileText, Crown, Mail, Check, X, Loader2 } from "lucide-react";
+import { getSpace, inviteUser, updateSpace } from "../api/space";
 
 interface Space {
   id: string;
@@ -35,18 +36,11 @@ const SpaceEditor = () => {
     const fetchSpace = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`http://localhost:3000/spaces/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const data = await getSpace(id,token);
 
-        if (!res.ok) throw new Error("Failed to fetch space");
-
-        const data = await res.json();
-        setSpace(data);
-        if (data.ownerId === user.id) setOwner(true);
-        setContent(data.content || "");
+        setSpace(data.data);
+        if (data.data.ownerId === user.id) setOwner(true);
+        setContent(data.data.content || "");
       } catch (err) {
         console.error("Error loading space:", err);
       } finally {
@@ -73,23 +67,16 @@ const SpaceEditor = () => {
   }, [id]);
 
   // Debounced function to save content to backend
-  const debouncedSaveContent = useCallback(
-    debounce((newContent: string) => {
-      if (!id || !token) return;
+const debouncedSaveContent = useCallback(
+  debounce((newContent: string) => {
+    if (!id || !token) return;
 
-      fetch(`http://localhost:3000/spaces/${id}/content`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: newContent }),
-      }).catch((err) => {
-        console.error("Failed to save content", err);
-      });
-    }, 500),
-    [id, token]
-  );
+    updateSpace(id, newContent, token).catch((err) => {
+      console.error("Failed to save content", err);
+    });
+  }, 500),
+  [id, token]
+);
 
   const handleContentChange = (newContent: string) => {
     setContent(newContent);
@@ -103,48 +90,32 @@ const SpaceEditor = () => {
       skipNextUpdate.current = false;
       return;
     }
-
-    // socket.emit("spaceUpdate", {
-    //   spaceId: id,
-    //   content: newContent,
-    // });
-
-    // Call debounced save
     debouncedSaveContent(newContent);
   };
 
-  const handleInvite = async () => {
-    if (!inviteEmail.trim()) return;
-    
-    setInviteStatus("");
-    setIsInviting(true);
-    
-    try {
-      const res = await fetch(`http://localhost:3000/invites/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: inviteEmail }),
-      });
 
-      if (!res.ok) throw new Error("Failed to invite user");
-      setInviteStatus("success");
-      setInviteEmail("");
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setInviteStatus(""), 3000);
-    } catch (err) {
-      console.error(err);
-      setInviteStatus("error");
-      
-      // Clear error message after 5 seconds
-      setTimeout(() => setInviteStatus(""), 5000);
-    } finally {
-      setIsInviting(false);
-    }
-  };
+const handleInvite = async () => {
+  if (!inviteEmail.trim()) return;
+
+  setInviteStatus("");
+  setIsInviting(true);
+
+  try {
+    await inviteUser(id, inviteEmail, token);
+    setInviteStatus("success");
+    setInviteEmail("");
+
+    setTimeout(() => setInviteStatus(""), 3000);
+  } catch (err) {
+    console.error(err);
+    setInviteStatus("error");
+
+    setTimeout(() => setInviteStatus(""), 5000);
+  } finally {
+    setIsInviting(false);
+  }
+};
+
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !isInviting) {
