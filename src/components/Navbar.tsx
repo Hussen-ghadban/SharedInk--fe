@@ -124,7 +124,7 @@ const Navbar: React.FC = () => {
                       <User className="w-4 h-4 text-blue-600" />
                     </div>
                     <span className="text-sm text-gray-700 font-medium">
-                      {user?.name || user?.email}
+                      {user?.username}
                     </span>
                   </div>
                   <button
@@ -190,7 +190,7 @@ const Navbar: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {user?.name || 'User'}
+                        {user?.username || 'User'}
                       </div>
                       <div className="text-sm text-gray-500">
                         {user?.email}

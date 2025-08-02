@@ -8,7 +8,12 @@ interface Space {
   id: string;
   title: string;
   content: string;
-  ownerId: string;
+  owner: {
+    username:string;
+  };
+  // collaborators:{
+  //   username:string;
+  // }
   createdAt: string;
 }
 
@@ -155,7 +160,7 @@ const GetSpaces = () => {
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <div className="flex items-center">
                       <User className="w-3 h-3 mr-1" />
-                      <span>{space.ownerId}</span>
+                      <span>{space.owner.username}</span>
                     </div>
                     <div className="flex items-center">
                       <Calendar className="w-3 h-3 mr-1" />

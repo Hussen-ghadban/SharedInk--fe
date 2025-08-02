@@ -18,7 +18,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError(null);
 
-  // Basic validation
   if (!email || !password || (type === 'signup' && !username)) {
     setError('Please fill in all fields');
     return;
@@ -36,7 +35,6 @@ const handleSubmit = async (e: React.FormEvent) => {
 };
 
 
-  // Clear error when user starts typing
   const handleInputChange = (setter: (value: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setter(e.target.value);
     if (error) setError(null);
@@ -113,13 +111,16 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Loading...' : (type === 'signup' ? 'Sign Up' : 'Sign In')}
-            </button>
+
+<button
+  type="submit"
+  disabled={loading}
+ className="w-full flex justify-center py-2 px-4 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+
+>
+  {loading ? 'Loading...' : (type === 'signup' ? 'Sign Up' : 'Sign In')}
+</button>
+
           </div>
           
           <div className="text-center">
