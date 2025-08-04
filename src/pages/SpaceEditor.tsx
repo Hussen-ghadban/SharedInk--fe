@@ -14,9 +14,12 @@ import {
   Check, 
   X, 
   Loader2, 
+  UserCircle,
   ChevronDown,
   ChevronUp,
   Copy,
+  Settings,
+  Shield
 } from "lucide-react";
 import { getSpace, inviteUser, updateSpace } from "../api/space";
 import { baseUrl } from "../config";
@@ -221,7 +224,7 @@ const SpaceEditor = () => {
                 {/* Collaborators Preview */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowCollaborators(!showCollaborators)}
+                    onClick={() => setShowCollaborators(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-white/70 hover:bg-white/90 border border-gray-200 rounded-xl transition-all duration-200 shadow-sm"
                   >
                     <div className="flex -space-x-2">
@@ -243,40 +246,8 @@ const SpaceEditor = () => {
                     <span className="text-sm font-medium text-gray-700">
                       {collaborators.length} {collaborators.length === 1 ? 'member' : 'members'}
                     </span>
-                    {showCollaborators ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    <Users className="w-4 h-4 text-gray-500" />
                   </button>
-
-                  {/* Collaborators Dropdown */}
-                  {showCollaborators && (
-                    <div className="absolute z-40 right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
-                      <div className="p-4 border-b border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-5 h-5 text-gray-600" />
-                          <h3 className="font-semibold text-gray-900">Team Members</h3>
-                        </div>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {collaborators.map((collaborator) => (
-                          <div key={collaborator.id} className="p-4 hover:bg-gray-50 border-b border-gray-50 last:border-b-0">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-full ${getAvatarColor(collaborator.email)} flex items-center justify-center text-white font-semibold shadow-sm`}>
-                                {getInitials(collaborator.email, collaborator.username)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 truncate">
-                                  {collaborator.username || collaborator.email.split('@')[0]}
-                                </p>
-                                <p className="text-sm text-gray-500 truncate">{collaborator.email}</p>
-                              </div>
-                              {collaborator.id === space?.ownerId && (
-                                <Crown className="w-4 h-4 text-yellow-500" />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -415,6 +386,126 @@ const SpaceEditor = () => {
           </div>
         </div>
       </div>
+
+      {/* Collaborators Dialog/Modal */}
+      {showCollaborators && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => setShowCollaborators(false)}
+          />
+          
+          {/* Dialog Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden transform transition-all duration-300 scale-100">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
+                    <p className="text-sm text-gray-600">
+                      {collaborators.length} {collaborators.length === 1 ? 'member' : 'members'} in this workspace
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCollaborators(false)}
+                  className="p-2 hover:bg-white/80 rounded-lg transition-colors duration-200"
+                >
+                    <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="max-h-96 overflow-y-auto">
+              {collaborators.length > 0 ? (
+                <div className="p-2">
+                  {collaborators.map((collaborator, index) => (
+                    <div key={collaborator.id} className="p-4 hover:bg-gray-50 rounded-xl m-2 transition-colors duration-150 group">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-full ${getAvatarColor(collaborator.email)} flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
+                          {getInitials(collaborator.email, collaborator.username)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900 truncate">
+                              {collaborator.username || collaborator.email.split('@')[0]}
+                            </p>
+                            {collaborator.id === space?.ownerId && (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-full">
+                                <Crown className="w-3 h-3 text-yellow-600" />
+                                <span className="text-xs text-yellow-700 font-medium">Owner</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 truncate mt-1">{collaborator.email}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {collaborator.id === space?.ownerId ? 'Workspace creator' : 'Collaborator'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {collaborator.id === user?.id && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                              You
+                            </span>
+                          )}
+                          <div className="w-2 h-2 bg-green-500 rounded-full" title="Online" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No collaborators yet</h3>
+                  <p className="text-gray-500 mb-4">Invite team members to start collaborating on this workspace.</p>
+                  {owner && (
+                    <button
+                      onClick={() => {
+                        setShowCollaborators(false);
+                        setShowInvitePanel(true);
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+                    >
+                      Invite Members
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {collaborators.length > 0 && (
+              <div className="p-4 border-t border-gray-100 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    Everyone can edit and collaborate in real-time
+                  </p>
+                  {owner && (
+                    <button
+                      onClick={() => {
+                        setShowCollaborators(false);
+                        setShowInvitePanel(true);
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+                    >
+                      Invite more
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .editor-container .ql-toolbar {
