@@ -14,12 +14,7 @@ import {
   Check, 
   X, 
   Loader2, 
-  UserCircle,
-  ChevronDown,
-  ChevronUp,
   Copy,
-  Settings,
-  Shield
 } from "lucide-react";
 import { getSpace, inviteUser, updateSpace } from "../api/space";
 import { baseUrl } from "../config";

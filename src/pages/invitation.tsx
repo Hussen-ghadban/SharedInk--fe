@@ -12,8 +12,16 @@ import {
   Calendar,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  RefreshCw,
+  Inbox
 } from 'lucide-react';
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { toast } from "sonner"
 
 interface Invitation {
   id: string;
@@ -50,10 +58,14 @@ const InvitationsList: React.FC = () => {
     setProcessingId(id);
     try {
       await acceptInvitation(id, token!);
+
+toast.success('invitation was accepted successfully!');
       await fetchInvites(); // Refresh list
     } catch (error) {
       console.error('Failed to accept invitation:', error);
-      setError('Failed to accept invitation. Please try again.');
+toast.success('failed to accept the invitation!');
+
+
     }
     setProcessingId(null);
   };
@@ -62,10 +74,13 @@ const InvitationsList: React.FC = () => {
     setProcessingId(id);
     try {
       await rejectInvitation(id, token!);
+toast.success('invitation was rejected successfully!');
+
       await fetchInvites(); // Refresh list
     } catch (error) {
       console.error('Failed to reject invitation:', error);
-      setError('Failed to reject invitation. Please try again.');
+toast.success('failed to reject the invitation!');
+
     }
     setProcessingId(null);
   };
@@ -73,27 +88,26 @@ const InvitationsList: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-amber-500" />;
       case 'ACCEPTED':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'REJECTED':
         return <XCircle className="w-4 h-4 text-red-500" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-gray-500" />;
+        return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
     switch (status) {
       case 'PENDING':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
+        return <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">Pending</Badge>;
       case 'ACCEPTED':
-        return `${baseClasses} bg-green-100 text-green-800`;
+        return <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">Accepted</Badge>;
       case 'REJECTED':
-        return `${baseClasses} bg-red-100 text-red-800`;
+        return <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">Rejected</Badge>;
       default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
+        return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
@@ -110,183 +124,282 @@ const InvitationsList: React.FC = () => {
     fetchInvites();
   }, []);
 
+  const pendingInvitations = invitations.filter(inv => inv.status === 'PENDING');
+  const processedInvitations = invitations.filter(inv => inv.status !== 'PENDING');
+
   if (loading && invitations.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-              <p className="text-gray-600">Loading your invitations...</p>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="max-w-4xl mx-auto p-4 sm:p-6">
+          <Card className="mt-8">
+            <CardContent className="p-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Loading invitations</h3>
+                  <p className="text-muted-foreground">Please wait while we fetch your invitations...</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Mail className="w-6 h-6 text-blue-600" />
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center">
+              <Mail className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              My Invitations
-            </h1>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+                My Invitations
+              </h1>
+              <p className="text-muted-foreground">
+                Manage your workspace invitations and collaborate with others
+              </p>
+            </div>
           </div>
-          <p className="text-gray-600">
-            Manage your workspace invitations and collaborate with others
-          </p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="border-l-4 border-l-primary">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total</p>
+                    <p className="text-2xl font-bold text-primary">{invitations.length}</p>
+                  </div>
+                  <Inbox className="h-6 w-6 text-primary/60" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-l-4 border-l-amber-500">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                    <p className="text-2xl font-bold text-amber-600">{pendingInvitations.length}</p>
+                  </div>
+                  <Clock className="h-6 w-6 text-amber-500/60" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-green-500">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Processed</p>
+                    <p className="text-2xl font-bold text-green-600">{processedInvitations.length}</p>
+                  </div>
+                  <CheckCircle className="h-6 w-6 text-green-500/60" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <span className="text-red-700">{error}</span>
-            <button
-              onClick={() => setError(null)}
-              className="ml-auto text-red-600 hover:text-red-800"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              {error}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setError(null)}
+                className="h-auto p-1 text-destructive hover:text-destructive"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Main Content */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <Card className="overflow-hidden">
           {loading && invitations.length > 0 && (
-            <div className="p-4 bg-blue-50 border-b border-blue-100">
-              <div className="flex items-center gap-2 text-blue-700">
+            <div className="p-4 bg-primary/5 border-b">
+              <div className="flex items-center gap-2 text-primary">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Refreshing invitations...</span>
+                <span className="text-sm font-medium">Refreshing invitations...</span>
               </div>
             </div>
           )}
 
           {invitations.length === 0 && !loading ? (
-            <div className="p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-gray-400" />
+            <CardContent className="p-12">
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto">
+                  <UserPlus className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">No invitations yet</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    You don't have any workspace invitations at the moment. Check back later or ask colleagues to invite you to their workspaces.
+                  </p>
+                </div>
+                <Button onClick={fetchInvites} variant="outline">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Check for invitations
+                </Button>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No invitations yet
-              </h3>
-              <p className="text-gray-600 mb-6">
-                You don't have any workspace invitations at the moment.
-              </p>
-              <button
-                onClick={fetchInvites}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
-              >
-                <Mail className="w-4 h-4" />
-                Check for invitations
-              </button>
-            </div>
+            </CardContent>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {invitations.map((invite) => (
-                <div
-                  key={invite.id}
-                  className="p-6 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    {/* Workspace Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-indigo-100 rounded-lg">
-                          <FileText className="w-5 h-5 text-indigo-600" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {invite.space.title}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            Invitation to collaborate
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Status and Date */}
-                      <div className="flex items-center gap-4 ml-11">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(invite.status)}
-                          <span className={getStatusBadge(invite.status)}>
-                            {invite.status.toLowerCase()}
-                          </span>
-                        </div>
-                        
-                        {invite.createdAt && (
-                          <div className="flex items-center gap-1 text-sm text-gray-500">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(invite.createdAt)}
+            <div className="divide-y">
+              {/* Pending Invitations */}
+              {pendingInvitations.length > 0 && (
+                <div>
+                  <div className="p-4 bg-amber-50/50">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-amber-600" />
+                      Pending Invitations
+                      <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                        {pendingInvitations.length}
+                      </Badge>
+                    </h3>
+                  </div>
+                  {pendingInvitations.map((invite) => (
+                    <div
+                      key={invite.id}
+                      className="p-6 hover:bg-muted/20 transition-colors duration-200"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                        {/* Workspace Info */}
+                        <div className="flex-1">
+                          <div className="flex items-start gap-4 mb-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <FileText className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-lg font-semibold text-foreground mb-1">
+                                {invite.space.title}
+                              </h4>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                You've been invited to collaborate on this workspace
+                              </p>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                  {getStatusIcon(invite.status)}
+                                  {getStatusBadge(invite.status)}
+                                </div>
+                                {invite.createdAt && (
+                                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Calendar className="w-3 h-3" />
+                                    {formatDate(invite.createdAt)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 lg:flex-shrink-0">
+                          <Button
+                            onClick={() => handleAccept(invite.id)}
+                            disabled={processingId === invite.id}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {processingId === invite.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Check className="w-4 h-4 mr-2" />
+                            )}
+                            Accept
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleReject(invite.id)}
+                            disabled={processingId === invite.id}
+                            variant="destructive"
+                          >
+                            {processingId === invite.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <X className="w-4 h-4 mr-2" />
+                            )}
+                            Reject
+                          </Button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Action Buttons */}
-                    {invite.status === 'PENDING' && (
-                      <div className="flex gap-2 sm:flex-shrink-0">
-                        <button
-                          onClick={() => handleAccept(invite.id)}
-                          disabled={processingId === invite.id}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
-                        >
-                          {processingId === invite.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Check className="w-4 h-4" />
-                          )}
-                          Accept
-                        </button>
-                        
-                        <button
-                          onClick={() => handleReject(invite.id)}
-                          disabled={processingId === invite.id}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
-                        >
-                          {processingId === invite.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <X className="w-4 h-4" />
-                          )}
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                    
-                    {invite.status !== 'PENDING' && (
-                      <div className="text-sm text-gray-500 sm:flex-shrink-0">
-                        {invite.status === 'ACCEPTED' ? 'Accepted' : 'Rejected'}
-                      </div>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* Processed Invitations */}
+              {processedInvitations.length > 0 && (
+                <div>
+                  {pendingInvitations.length > 0 && <Separator />}
+                  <div className="p-4 bg-muted/30">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-muted-foreground" />
+                      Recent Activity
+                      <Badge variant="outline">
+                        {processedInvitations.length}
+                      </Badge>
+                    </h3>
+                  </div>
+                  {processedInvitations.map((invite) => (
+                    <div
+                      key={invite.id}
+                      className="p-6 hover:bg-muted/10 transition-colors duration-200 opacity-75"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-foreground mb-1">
+                            {invite.space.title}
+                          </h4>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(invite.status)}
+                              {getStatusBadge(invite.status)}
+                            </div>
+                            {invite.createdAt && (
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Calendar className="w-3 h-3" />
+                                {formatDate(invite.createdAt)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Refresh Button */}
         {invitations.length > 0 && (
-          <div className="mt-6 text-center">
-            <button
+          <div className="mt-6 flex justify-center">
+            <Button
               onClick={fetchInvites}
               disabled={loading}
-              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+              variant="outline"
+              size="lg"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
-                <Mail className="w-4 h-4" />
+                <RefreshCw className="w-4 h-4 mr-2" />
               )}
               Refresh invitations
-            </button>
+            </Button>
           </div>
         )}
       </div>

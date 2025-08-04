@@ -8,11 +8,14 @@ import InvitationsList from './pages/invitation';
 import HomePage from './pages/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+import Profile from './pages/Profile';
+import { Toaster } from './components/ui/sonner';
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
     <Navbar/>
+    <Toaster />
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<HomePage />} />
@@ -25,6 +28,14 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <AddSpace />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           } 
         />
